@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Requirements:
+#   The Node Agent Daemon (NAD: https://github.com/circonus-labs/nad) and curl
+#   (http://curl.haxx.se) must both be installed. NAD must be running.
+#
+# Usage:
+#   see https://login.circonus.com/user/docs/Data/CheckTypes#HTTPTrap
+#
+# Example:
+#   push_nad.sh <circonus http_trap url>
+
+set -e
+
+METRICS_URL=$1
+SSL_CERT=$HOME/.ssh/circonus.crt
+
+if [ -d $SSL_CERT ]; then
+  curl -s http://login.circonus.com/pki/ca.crt > $SSL_CERT
+fi
+
+METRICS_JSON=$(curl -s http://localhost:2609)
+
+curl -H 'Content-Type: application/json' --cacert "/root/circonus.crt" -X PUT -d "$METRICS_JSON" $METRICS_URL
